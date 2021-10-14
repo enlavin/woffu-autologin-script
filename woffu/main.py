@@ -1,5 +1,6 @@
 import getpass
 import json
+import sys
 from operator import itemgetter
 import os.path
 from .woffu import Woffu
@@ -22,11 +23,15 @@ def run():
         password = getpass.getpass("Enter your password:\n")
 
     client = Woffu(username, password)
-
-    if (client.sign_in()):
-        print ("Success!")
+    if client.is_working_day_for_me():
+        try:
+            client.sign_in()
+            print('Success!')
+        except Exception as e:
+            print("Something went wrong when trying to log you in/out: {}".format(e.message))
+            sys.exit(1)
     else:
-        print ("Something went wrong when trying to log you in/out.")
+        print("Not a working day. Enjoy!")
 
     if (not saved_credentials):
         client.save_data()

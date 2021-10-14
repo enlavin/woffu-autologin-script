@@ -35,7 +35,7 @@ class Woffu:
         return company['Domain'], users['UserId'], users['CompanyId']
 
     def sign_in(self):
-        return requests.post(
+        response = requests.post(
             f"https://{self.domain}/api/svc/signs/signs",
             json = {
                 'StartDate': datetime.now().replace(microsecond=0).isoformat()+"+01:00",
@@ -44,7 +44,10 @@ class Woffu:
                 'UserId': self.user_id
             },
             headers = self.auth_headers
-        ).ok
+        )
+
+        if response.status_code >= 400:
+            raise Exception("Error trying to sign in or sign out.")
 
     def save_data(self):
         #Store user/password/id to make less network requests in next logins
