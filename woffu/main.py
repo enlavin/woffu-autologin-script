@@ -43,6 +43,11 @@ def default_credentials_paths():
     return credential_paths
 
 
+def is_dry_run():
+    dry_run_flag = os.environ.get('WOFFU_DRY_RUN', '')
+    return dry_run_flag.lower() in ['1', 'yes', 'true']
+
+
 def run():
     print("Woffu Autologin Script\n")
 
@@ -51,7 +56,11 @@ def run():
     woffunator = Woffu(username, password)
     if woffunator.is_working_day_for_me():
         try:
-            woffunator.sign_in()
+            if (not is_dry_run()):
+                woffunator.sign_in()
+            else:
+                print('Dry-run enabled, no sign-in.')
+
             print('Success!')
         except Exception as e:
             print(f'Something went wrong when trying to log you in/out: {e.message}')
