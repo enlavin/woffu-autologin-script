@@ -29,11 +29,11 @@ class Woffu:
 
     def _get_domain_company_user_id(self):
         users = requests.get(
-            "https://app.woffu.com/api/users", 
+            "https://app.woffu.com/api/users",
             headers = self.auth_headers
         ).json()
         company = requests.get(
-            f"https://app.woffu.com/api/companies/{users['CompanyId']}", 
+            f"https://app.woffu.com/api/companies/{users['CompanyId']}",
             headers = self.auth_headers
         ).json()
         return company['Domain'], users['UserId'], users['CompanyId']
@@ -69,14 +69,18 @@ class Woffu:
 
     def get_holidays(self):
         holidays = requests.get(
-            f"https://{self.domain}/api/users/{self.user_id}/requests?pageSize=1000", 
+            f"https://{self.domain}/api/users/{self.user_id}/requests?pageSize=1000",
             headers = self.auth_headers
         ).json()
         return holidays
 
-    def get_pending_holidays(self):
+    def get_pending_holidays(self, day):
+        # check for consumed days too, because the status may change during the
+        # actual vacation day
         pending_holidays = [req for req in self.get_holidays()
-            if req['RequestStatusId'] == 20 and req['RequestStatus'] == '_RequestStatusAcceptedAndPending']
+            if (req['RequestStatusId'] == 20) \
+                and (req['RequestStatus'] in ['_RequestStatusAcceptedAndPending', '_RequestStatusConsumed']) \
+                and (datetime.fromisoformat(req['StartDate']).date() >= day or datetime.fromisoformat(req['StartDate']).date() <= day)]
         return pending_holidays
 
     def get_context(self):
@@ -109,7 +113,7 @@ class Woffu:
         if is_bank_holiday:
             return False
 
-        pending_holidays = self.get_pending_holidays()
+        pending_holidays = self.get_pending_holidays(day)
         if len(pending_holidays) == 0:
             return True
 
