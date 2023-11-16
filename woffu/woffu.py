@@ -2,6 +2,7 @@ import requests
 import json
 from datetime import datetime, date
 from .exceptions import InvalidCredentials
+from .telegram import send_to_telegram
 
 class Woffu:
     def __init__(self, username, password):
