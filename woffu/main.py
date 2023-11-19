@@ -55,9 +55,9 @@ def is_dry_run():
 
 def wait_some_random_time():
     try:
-        how_log = int(os.environ.get('WOFFU_WAIT_RANDOM', None))
+        how_long = int(os.environ.get('WOFFU_WAIT_RANDOM', None))
 
-        sleeptime = random.randint(1, how_log)
+        sleeptime = random.randint(1, how_long)
         print('Sleeping {} seconds...'.format(sleeptime))
         time.sleep(sleeptime)
     except (ValueError, TypeError):
