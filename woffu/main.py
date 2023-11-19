@@ -1,10 +1,15 @@
 import getpass
 import json
+import time
+import random
 import sys
 from operator import itemgetter
+import os
 import os.path
 from pathlib import Path
 from .woffu import Woffu
+from .telegram import notify
+import datetime
 
 CREDENTIALS_FILENAME = '.woffu-autologin-script.json'
 LEGACY_CREDENTIALS_FILENAME = 'data.json'
@@ -48,6 +53,17 @@ def is_dry_run():
     return dry_run_flag.lower() in ['1', 'yes', 'true']
 
 
+def wait_some_random_time():
+    try:
+        how_log = int(os.environ.get('WOFFU_WAIT_RANDOM', None))
+
+        sleeptime = random.randint(1, how_log)
+        print('Sleeping {} seconds...'.format(sleeptime))
+        time.sleep(sleeptime)
+    except (ValueError, TypeError):
+        return
+
+
 def run():
     print("Woffu Autologin Script\n")
 
@@ -57,16 +73,19 @@ def run():
     if woffunator.is_working_day_for_me():
         try:
             if (not is_dry_run()):
+                wait_some_random_time()
+
                 woffunator.sign_in()
+                notify('Sign in/out at {}'.format(datetime.datetime.now().strftime('%d/%m/%Y %H:%M')))
             else:
-                print('Dry-run enabled, no sign-in.')
+                notify('Dry-run enabled, no sign-in.')
 
             print('Success!')
         except Exception as e:
-            print(f'Something went wrong when trying to log you in/out: {e.message}')
+            notify(f'Something went wrong when trying to log you in/out: {e.message}')
             sys.exit(1)
     else:
-        print('Not a working day. Enjoy!')
+        notify('Not a working day. Enjoy!')
 
     if (not has_saved_credentials):
         credentials_path = default_credentials_paths()[0]
