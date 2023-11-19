@@ -20,4 +20,4 @@ The telegram support relies on these environtment vars:
 The first one is the Telegram ChatBot API Token that you can get from the @BotFather.
 And the second one is the ID of the chat you want it to sent the messages.
 
-Once this two vars are set every execution will output its result to this chat, so you can easily track that your signins are running fine (or not).
+Once these two vars are set every execution will output its result to this chat, so you can easily track that your signins are running fine (or not).
