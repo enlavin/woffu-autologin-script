@@ -1,7 +1,7 @@
 import requests
 import os
 
-def send_to_telegram(message):
+def notify(message):
 
     apiToken = os.environ.get('WOFFU_TELEGRAM_APITOKEN', None)
     chatID = os.environ.get('WOFFU_TELEGRAM_CHATID', None)

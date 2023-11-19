@@ -4,10 +4,11 @@ import time
 import random
 import sys
 from operator import itemgetter
+import os
 import os.path
 from pathlib import Path
 from .woffu import Woffu
-from .telegram import send_to_telegram
+from .telegram import notify
 import datetime
 
 CREDENTIALS_FILENAME = '.woffu-autologin-script.json'
@@ -52,6 +53,17 @@ def is_dry_run():
     return dry_run_flag.lower() in ['1', 'yes', 'true']
 
 
+def wait_some_random_time():
+    try:
+        how_log = int(os.environ.get('WOFFU_WAIT_RANDOM', None))
+
+        sleeptime = random.randint(1, how_log)
+        print('Sleeping {} seconds...'.format(sleeptime))
+        time.sleep(sleeptime)
+    except (ValueError, TypeError):
+        return
+
+
 def run():
     print("Woffu Autologin Script\n")
 
@@ -60,21 +72,20 @@ def run():
     woffunator = Woffu(username, password)
     if woffunator.is_working_day_for_me():
         try:
-            sleeptime = random.randint(1, 120)
-            print('Sleeping {} seconds...'.format(sleeptime))
-            time.sleep(sleeptime)
             if (not is_dry_run()):
+                wait_some_random_time()
+
                 woffunator.sign_in()
-                send_to_telegram('Sign in/out at {}'.format(datetime.datetime.now().strftime('%d/%m/%Y %H:%M')))
+                notify('Sign in/out at {}'.format(datetime.datetime.now().strftime('%d/%m/%Y %H:%M')))
             else:
-                send_to_telegram('Dry-run enabled, no sign-in.')
+                notify('Dry-run enabled, no sign-in.')
 
             print('Success!')
         except Exception as e:
-            send_to_telegram(f'Something went wrong when trying to log you in/out: {e.message}')
+            notify(f'Something went wrong when trying to log you in/out: {e.message}')
             sys.exit(1)
     else:
-        send_to_telegram('Not a working day. Enjoy!')
+        notify('Not a working day. Enjoy!')
 
     if (not has_saved_credentials):
         credentials_path = default_credentials_paths()[0]
